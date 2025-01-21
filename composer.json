@@ -1,0 +1,44 @@
+{
+  "name": "wilfreedi/acmen-laravel-sdk",
+  "description": "A Laravel SDK for API interactions",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Nikolay Grigoriev",
+      "email": "wilfreedi@ya.ru"
+    }
+  ],
+  "require": {
+    "php": "^8.1",
+    "guzzlehttp/guzzle": "^7.0"
+  },
+  "require-dev": {
+    "orchestra/testbench": "^7.2",
+    "phpunit/phpunit": "^9.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "Wilfreedi\\AcMen\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Wilfreedi\\AcMen\\Test\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": [
+      "vendor/bin/phpunit"
+    ]
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Wilfreedi\\AcMen\\AcMenServiceProvider"
+      ],
+      "aliases": {
+        "AcMen": "Wilfreedi\\AcMen\\Facades\\AcMen"
+      }
+    }
+  }
+}
