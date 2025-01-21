@@ -12,12 +12,14 @@ class AcMenService
         $this->token = config('acmen.token');
     }
 
-    public function sendMessage(int $chatId, string $message): array {
+    public function sendMessage(int $chatId, string $message, int $topicId = null): array {
         $data = [
             'chat_id' => $chatId,
             'message' => $message
         ];
-
+        if ($topicId) {
+            $data['message_thread_id'] = $topicId;
+        }
         return $this->request('sendMessage', $data);
     }
 
