@@ -13,15 +13,16 @@ class AcMenJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $method, $data, $type;
+    public $method, $data, $type, $token;
 
     /**
      * Create a new job instance.
      */
-    public function __construct($method, $data, $type) {
+    public function __construct($method, $data, $type, $token) {
         $this->method = $method;
         $this->data = $data;
         $this->type = $type;
+        $this->token = $token;
     }
 
     /**
@@ -31,7 +32,9 @@ class AcMenJob implements ShouldQueue
         $method = $this->method;
         $data = $this->data;
         $type = $this->type;
+        $token = $this->token;
 
-        AcMenService::request($method, $data, $type);
+        $acMenService = new AcMenService();
+        $acMenService->request($method, $data, $type, $token);
     }
 }

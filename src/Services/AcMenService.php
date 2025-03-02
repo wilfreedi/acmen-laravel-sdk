@@ -9,9 +9,6 @@ class AcMenService
 {
 
     private string $token;
-    private string $chatId;
-    private ?string $message = null;
-    private ?string $topicId = null;
 
     private bool $useQueue = false;
 
@@ -20,49 +17,42 @@ class AcMenService
         $this->token = config('acmen.token');
     }
 
-    public function chat(int $chatId): self {
-        $this->chatId = $chatId;
-        return $this;
-    }
-
-    public function message(string $message): self {
-        $this->message = $message;
-        return $this;
-    }
-
-    public function topic(int $topicId): self {
-        $this->topicId = $topicId;
-        return $this;
-    }
-
-    public function queue(): void {
+    public function queue(): self {
         $this->useQueue = true;
+        return $this;
     }
 
-    public function sendMessage(): array {
+    /**
+     * @param int $chatId ид чата, для групп с -
+     * @param string $message сообщение
+     * @param int|null $topicId ид топика(темы), если есть
+     * @return array
+     */
+    public function sendMessage(int $chatId, string $message, ?int $topicId = null): array {
         $data = [
-            'chat_id' => $this->chatId,
-            'message' => $this->message
+            'chat_id' => $chatId,
+            'message' => $message
         ];
-        if ($this->topicId) {
-            $data['message_thread_id'] = $this->topicId;
+        if ($topicId) {
+            $data['message_thread_id'] = $topicId;
         }
         return $this->sendRequest('sendMessage', $data);
     }
 
     public function sendRequest(string $method, array $data = [], string $type = 'POST'): array {
+        $token = $this->token;
         if($this->useQueue) {
-            AcMenJob::dispatch($method, $data, $type);
+            AcMenJob::dispatch($method, $data, $type, $token);
             return [
                 'success' => 1,
                 'message' => 'Запрос отправлен в очередь'
             ];
         } else {
-            return $this->request($method, $data, $type);
+            return $this->request($method, $data, $type, $token);
         }
     }
 
-    public function request(string $method, array $data = [], string $type = 'POST'): array {
+    public function request(string $method, array $data, string $type, string $token): array {
         $rez = [
             'success' => 0,
             'message' => 'Ошибка'
@@ -72,7 +62,7 @@ class AcMenService
 
             $client = new Client();
             $headers = [
-                'Authorization' => 'Bearer ' . $this->token,
+                'Authorization' => 'Bearer ' . $token,
                 "Content-Type"  => "application/json",
                 "Accept"        => "application/json"
             ];
