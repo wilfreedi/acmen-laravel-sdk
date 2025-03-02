@@ -2,8 +2,8 @@
 
 namespace Wilfreedi\AcMen\Services;
 
-use App\Jobs\AcMenJob;
 use GuzzleHttp\Client;
+use Wilfreedi\AcMen\Jobs\AcMenJob;
 
 class AcMenService
 {
