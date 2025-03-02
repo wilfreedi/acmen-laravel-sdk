@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  *
- * @method static array sendMessage($chatId, $message)
+ * @method static array sendMessage($chatId, $message, $topicId = null)
  *
  */
 
