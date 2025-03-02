@@ -2,12 +2,15 @@
 
 namespace Wilfreedi\AcMen\Services;
 
+use App\Jobs\AcMenJob;
 use GuzzleHttp\Client;
 
 class AcMenService
 {
 
     private string $token;
+    private bool $useQueue = false;
+
     public function __construct() {
         $this->token = config('acmen.token');
     }
@@ -21,6 +24,18 @@ class AcMenService
             $data['message_thread_id'] = $topicId;
         }
         return $this->request('sendMessage', $data);
+    }
+
+    public function sendRequest(string $method, array $data = [], string $type = 'POST') {
+        if($this->useQueue) {
+            AcMenJob::dispatch($method, $data, $type);
+            return [
+                'success' => 1,
+                'message' => 'Запрос отправлен в очередь'
+            ];
+        } else {
+            return $this->request($method, $data, $type);
+        }
     }
 
     public function request(string $method, array $data = [], string $type = 'POST'): array {
@@ -67,6 +82,10 @@ class AcMenService
 
     public function setToken(string $token): void {
         $this->token = $token;
+    }
+
+    public function queue(): void {
+        $this->useQueue = true;
     }
 
 }
