@@ -41,7 +41,7 @@ class AcMenService
 
     public function sendMessage(): array {
         $data = [
-            'chat_id' => $this->message,
+            'chat_id' => $this->chatId,
             'message' => $this->message
         ];
         if ($this->topicId) {
