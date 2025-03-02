@@ -9,24 +9,48 @@ class AcMenService
 {
 
     private string $token;
+    private string $chatId;
+    private ?string $message = null;
+    private ?string $topicId = null;
+
     private bool $useQueue = false;
+
 
     public function __construct() {
         $this->token = config('acmen.token');
     }
 
-    public function sendMessage(int $chatId, string $message, int $topicId = null): array {
-        $data = [
-            'chat_id' => $chatId,
-            'message' => $message
-        ];
-        if ($topicId) {
-            $data['message_thread_id'] = $topicId;
-        }
-        return $this->request('sendMessage', $data);
+    public function chat(int $chatId): self {
+        $this->chatId = $chatId;
+        return $this;
     }
 
-    public function sendRequest(string $method, array $data = [], string $type = 'POST') {
+    public function message(string $message): self {
+        $this->message = $message;
+        return $this;
+    }
+
+    public function topic(int $topicId): self {
+        $this->topicId = $topicId;
+        return $this;
+    }
+
+    public function queue(): void {
+        $this->useQueue = true;
+    }
+
+    public function sendMessage(): array {
+        $data = [
+            'chat_id' => $this->message,
+            'message' => $this->message
+        ];
+        if ($this->topicId) {
+            $data['message_thread_id'] = $this->topicId;
+        }
+        return $this->sendRequest('sendMessage', $data);
+    }
+
+    public function sendRequest(string $method, array $data = [], string $type = 'POST'): array {
         if($this->useQueue) {
             AcMenJob::dispatch($method, $data, $type);
             return [
@@ -82,10 +106,6 @@ class AcMenService
 
     public function setToken(string $token): void {
         $this->token = $token;
-    }
-
-    public function queue(): void {
-        $this->useQueue = true;
     }
 
 }
