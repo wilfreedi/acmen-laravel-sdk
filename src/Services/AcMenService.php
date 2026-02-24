@@ -84,11 +84,13 @@ class AcMenService
             $rez = json_decode($response->getBody(), true);
         } catch (\Exception $e) {
             $message = $e->getMessage();
-            if ($e->hasResponse()) {
-                $message = $e->getResponse()->getBody()->getContents();
-                $message = json_decode($message, true);
-                $message = $message['message'] ?? $e->getMessage();
+
+            if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
+                $body = (string) $e->getResponse()->getBody();
+                $decoded = json_decode($body, true);
+                $message = is_array($decoded) ? ($decoded['message'] ?? $message) : $message;
             }
+
             $rez['message'] = $message;
         }
         return $rez;
