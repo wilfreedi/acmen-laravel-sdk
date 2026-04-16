@@ -11,7 +11,7 @@ class AcMenServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../config/acmen.php', 'acmen');
 
         $this->app->singleton('acmen', function ($app) {
-            return new \Wilfreedi\AcMen\Services\AcMenService(config('acmen'));
+            return new \Wilfreedi\AcMen\Services\AcMenService();
         });
 
     }

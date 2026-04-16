@@ -24,9 +24,22 @@ abstract class TestCase extends OrchestraTestCase
     // Настраиваем конфигурацию для тестов
     protected function getEnvironmentSetUp($app) {
         $app['config']->set('acmen', [
-            'url'     => 'https://acmen.ru/api/v1/telegram/',
-            'token'   => 'test',
-            'timeout' => 10,
+            'base_url' => 'https://acmen.ru/api/v1',
+            'url'      => 'https://acmen.ru/api/v1/telegram/',
+            'vk_url'   => 'https://acmen.ru/api/v1/vk/',
+            'email_url'=> 'https://acmen.ru/api/v1/email',
+            'endpoints' => [
+                'telegram.send_message' => '/telegram/sendMessage',
+                'vk.send_message'       => '/vk/sendMessage',
+                'email.send'            => '/email',
+            ],
+            'channels' => [
+                'telegram' => \Wilfreedi\AcMen\Channels\TelegramChannel::class,
+                'vk'       => \Wilfreedi\AcMen\Channels\VkChannel::class,
+                'email'    => \Wilfreedi\AcMen\Channels\EmailChannel::class,
+            ],
+            'token'    => 'test',
+            'timeout'  => 10,
         ]);
     }
 }
