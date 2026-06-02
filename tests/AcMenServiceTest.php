@@ -121,14 +121,35 @@ class AcMenServiceTest extends TestCase
         ], $service->captured['data']);
     }
 
+    /** @test */
+    public function it_sends_vk_document()
+    {
+        $service = $this->fakeService();
+        $filePath = tempnam(sys_get_temp_dir(), 'test_file');
+        file_put_contents($filePath, 'test content');
+
+        $service->sendVkDocument(123456, $filePath, 'Лови файл!', 1);
+
+        $this->assertSame('https://acmen.ru/api/v1/vk/sendDocument', $service->captured['method']);
+        $this->assertTrue($service->captured['isMultipart']);
+        $this->assertSame([
+            'peer_id' => 123456,
+            'file'    => $filePath,
+            'message' => 'Лови файл!',
+            'from_id' => 1,
+        ], $service->captured['data']);
+
+        unlink($filePath);
+    }
+
     private function fakeService(): AcMenService
     {
         return new class extends AcMenService {
             public array $captured = [];
 
-            public function request(string $method, array $data, string $type, string $token, ?string $url = null): array
+            public function request(string $method, array $data, string $type, string $token, ?string $url = null, bool $isMultipart = false): array
             {
-                $this->captured = compact('method', 'data', 'type', 'token', 'url');
+                $this->captured = compact('method', 'data', 'type', 'token', 'url', 'isMultipart');
 
                 return ['success' => 1];
             }

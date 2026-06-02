@@ -17,18 +17,20 @@ class AcMenJob implements ShouldQueue
     public array $data;
     public string $type;
     public string $token;
-    public ?string $url;
+    public ?string $url = null;
+    public bool $isMultipart = false;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $method, array $data, string $type, string $token, ?string $url = null)
+    public function __construct(string $method, array $data, string $type, string $token, ?string $url = null, bool $isMultipart = false)
     {
         $this->method = $method;
         $this->data = $data;
         $this->type = $type;
         $this->token = $token;
         $this->url = $url;
+        $this->isMultipart = $isMultipart;
     }
 
     /**
@@ -40,8 +42,9 @@ class AcMenJob implements ShouldQueue
         $type = $this->type;
         $token = $this->token;
         $url = $this->url;
+        $isMultipart = $this->isMultipart;
 
         $acMenService = new AcMenService();
-        $acMenService->request($method, $data, $type, $token, $url);
+        $acMenService->request($method, $data, $type, $token, $url, $isMultipart);
     }
 }

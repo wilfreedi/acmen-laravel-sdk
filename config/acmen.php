@@ -13,6 +13,7 @@ return [
     'endpoints' => [
         'telegram.send_message' => '/telegram/sendMessage',
         'vk.send_message'       => '/vk/sendMessage',
+        'vk.send_document'      => '/vk/sendDocument',
         'email.send'            => '/email',
     ],
 

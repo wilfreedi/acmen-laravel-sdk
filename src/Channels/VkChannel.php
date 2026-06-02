@@ -2,6 +2,7 @@
 
 namespace Wilfreedi\AcMen\Channels;
 
+use Wilfreedi\AcMen\DTO\VkDocument;
 use Wilfreedi\AcMen\DTO\VkMessage;
 
 final class VkChannel extends AbstractChannel
@@ -19,6 +20,11 @@ final class VkChannel extends AbstractChannel
     public function send(VkMessage $message): array
     {
         return $this->post($message);
+    }
+
+    public function sendDocument(VkDocument $document): array
+    {
+        return $this->service->sendToEndpoint('vk.send_document', $document->toArray(), 'POST', true);
     }
 
     /**

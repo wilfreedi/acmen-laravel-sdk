@@ -8,6 +8,7 @@ use Wilfreedi\AcMen\Channels\EmailChannel;
 use Wilfreedi\AcMen\Channels\TelegramChannel;
 use Wilfreedi\AcMen\Channels\VkChannel;
 use Wilfreedi\AcMen\Contracts\ChannelContract;
+use Wilfreedi\AcMen\DTO\VkDocument;
 use Wilfreedi\AcMen\Jobs\AcMenJob;
 use Wilfreedi\AcMen\Support\EndpointResolver;
 
@@ -110,6 +111,18 @@ class AcMenService
     }
 
     /**
+     * @param int $peerId идентификатор диалога/чата VK
+     * @param string $file путь к файлу
+     * @param string|null $message текст сообщения
+     * @param int|null $fromId ID VK-интеграции
+     * @return array
+     */
+    public function sendVkDocument(int $peerId, string $file, ?string $message = null, ?int $fromId = null): array
+    {
+        return $this->vk()->sendDocument(new VkDocument($peerId, $file, $message, $fromId));
+    }
+
+    /**
      * @param array<int, string> $to
      * @param array<int, string> $toHidden
      */
@@ -128,19 +141,19 @@ class AcMenService
     /**
      * @param array<string, mixed> $data
      */
-    public function sendToEndpoint(string $endpointKey, array $data, string $type = 'POST'): array
+    public function sendToEndpoint(string $endpointKey, array $data, string $type = 'POST', bool $isMultipart = false): array
     {
         $url = $this->endpointResolver->resolve($endpointKey);
 
-        return $this->sendRequest($url, $data, $type);
+        return $this->sendRequest($url, $data, $type, null, $isMultipart);
     }
 
-    public function sendRequest(string $method, array $data = [], string $type = 'POST', ?string $url = null): array
+    public function sendRequest(string $method, array $data = [], string $type = 'POST', ?string $url = null, bool $isMultipart = false): array
     {
         $token = $this->token;
 
         if ($this->useQueue) {
-            AcMenJob::dispatch($method, $data, $type, $token, $url);
+            AcMenJob::dispatch($method, $data, $type, $token, $url, $isMultipart);
 
             return [
                 'success' => 1,
@@ -148,10 +161,10 @@ class AcMenService
             ];
         }
 
-        return $this->request($method, $data, $type, $token, $url);
+        return $this->request($method, $data, $type, $token, $url, $isMultipart);
     }
 
-    public function request(string $method, array $data, string $type, string $token, ?string $url = null): array
+    public function request(string $method, array $data, string $type, string $token, ?string $url = null, bool $isMultipart = false): array
     {
         $rez = [
             'success' => 0,
@@ -164,15 +177,40 @@ class AcMenService
             $client = new Client();
             $headers = [
                 'Authorization' => 'Bearer ' . $token,
-                "Content-Type"  => "application/json",
                 "Accept"        => "application/json"
             ];
+
+            if (!$isMultipart) {
+                $headers["Content-Type"] = "application/json";
+            }
 
             if ($type == 'GET') {
                 $separator = str_contains($requestUrl, '?') ? '&' : '?';
                 $response = $client->request('GET', $requestUrl . (count($data) ? $separator . http_build_query($data) : ''), [
                     'headers' => $headers,
                     'timeout' => config('acmen.timeout')
+                ]);
+            } elseif ($isMultipart) {
+                $multipart = [];
+                foreach ($data as $name => $contents) {
+                    if ($name === 'file' && is_string($contents) && file_exists($contents)) {
+                        $multipart[] = [
+                            'name'     => $name,
+                            'contents' => fopen($contents, 'r'),
+                            'filename' => basename($contents)
+                        ];
+                    } else {
+                        $multipart[] = [
+                            'name'     => $name,
+                            'contents' => (string) $contents
+                        ];
+                    }
+                }
+
+                $response = $client->request($type, $requestUrl, [
+                    'headers'   => $headers,
+                    'multipart' => $multipart,
+                    'timeout'   => config('acmen.timeout')
                 ]);
             } else {
                 $response = $client->request($type, $requestUrl, [

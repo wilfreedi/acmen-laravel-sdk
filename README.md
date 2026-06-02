@@ -36,6 +36,7 @@ return [
     'endpoints' => [
         'telegram.send_message' => '/telegram/sendMessage',
         'vk.send_message'       => '/vk/sendMessage',
+        'vk.send_document'      => '/vk/sendDocument',
         'email.send'            => '/email',
     ],
 
@@ -82,6 +83,14 @@ $vkResponse = AcMen::sendVkMessage(
     randomId: 123456 // optional, если не передан, генерируется автоматически
 );
 
+// VK Document (отправка файлов)
+$vkDocResponse = AcMen::sendVkDocument(
+    peerId: 2000000015,
+    file: '/path/to/local/file.pdf',
+    message: 'Лови файл!', // optional
+    fromId: 1 // optional
+);
+
 // Email
 $emailResponse = AcMen::sendEmail(
     to: ['user1@example.com', 'user2@example.com'],
@@ -113,6 +122,26 @@ AcMen::queue()->vk()->sendMessage(2000000015, 'Сообщение через о�
   "success": true,
   "data": 981,
   "message": "VK сообщение отправлено"
+}
+```
+
+### VK: POST `/api/v1/vk/sendDocument`
+
+Отправляет файл (multipart/form-data).
+
+Параметры:
+- `peer_id` (int, required)
+- `file` (file, required): путь к локальному файлу
+- `message` (string, optional)
+- `from_id` (int, optional)
+
+Успешный ответ:
+
+```json
+{
+  "success": true,
+  "data": 12345,
+  "message": "VK файл отправлен"
 }
 ```
 

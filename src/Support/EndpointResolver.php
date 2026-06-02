@@ -40,6 +40,10 @@ final class EndpointResolver
             return $this->legacyMethodUrl($this->config['vk_url'] ?? null, 'sendMessage');
         }
 
+        if ($endpointKey === 'vk.send_document') {
+            return $this->legacyMethodUrl($this->config['vk_url'] ?? null, 'sendDocument');
+        }
+
         if ($endpointKey === 'email.send') {
             $emailUrl = $this->config['email_url'] ?? null;
             return is_string($emailUrl) && $emailUrl !== '' ? rtrim($emailUrl, '/') : null;
